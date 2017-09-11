@@ -1,2 +1,1 @@
-pykka==1.2.1
 gpiozero==1.4.0
