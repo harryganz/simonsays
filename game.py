@@ -2,11 +2,6 @@
 """Game logic for simonsays"""
 import random
 
-# Constants representing the differently colored lights
-RED = 0
-GREEN = 1
-BLUE = 2
-
 class Game(object):
     """Instance of simonsays game"""
 
@@ -22,10 +17,11 @@ class Game(object):
         self.current_sequence = []
         self.round_number = 0
         self.is_listening = False
+        self.is_active = False
 
-    def add_light_with_button(self, index, light, button):
+    def add_light_with_button(self, light, button):
         """Adds light to list of lights"""
-        self.lights[index] = (light, button)
+        self.lights.append((light, button))
 
     def add_buzzer(self, buzzer):
         """Adds buzzer"""
@@ -33,8 +29,26 @@ class Game(object):
 
     def handle_press(self, source):
         """Method for handling button press"""
-        print("Button {} pressed".format(source))
-        self.lights[source][0].blink(0.3, 0.3, 1)
+        if self.is_listening:
+            # Flash current source light
+            self.lights[source][0].flash(0.3, 0.3, 1, background=False)
+            # Check if source matches next item in current_sequence
+            next_item = self.current_sequence[0]
+            if source == next_item:
+                # Check if round is over
+                if len(self.current_sequence) == 1:
+                    # If no more items, start next round
+                    self.start_round()
+                else:
+                    # Else clear next item
+                    self.current_sequence = self.current_sequence[1:]
+            else:
+                # If the game is active end it
+                if self.is_active:
+                    self.end_game()
+                # Otherwise start a new game
+                else:
+                    self.start_game()
 
     def create_sequence(self, seed=None):
         """Creates a random sequence for round"""
@@ -48,16 +62,39 @@ class Game(object):
 
     def display_sequence(self):
         """Displays current sequence on lights"""
-        pass
+        for i in range(0, len(self.current_sequence)):
+            # Flash each light in the sequence
+            self.lights[self.current_sequence[i]][0].flash(0.3, 0.3, 1, background=False)
 
     def start_round(self):
         """Starts a new round"""
-        pass
+        # Turn off listening
+        self.is_listening = False
+        # Play buzzer to indicate new round
+        self.buzzer.beep(0.5, 0, 1, background=False)
+        # Increment round number
+        self.round_number = self.round_number + 1
+        # Create sequence for this round
+        self.create_sequence()
+        # Display new sequence
+        self.display_sequence()
+        # Play buzzer to indicate that it is now listening
+        self.buzzer.beep(0.5, 0, 1, background=False)
+        # Start listening for input
+        self.is_listening = True
 
     def end_game(self):
         """Ends the game"""
-        pass
+        # Play the buzzer three times
+        self.buzzer.beep(0.3, 0.3, 3, background=False)
+        # Set is_active to false
+        self.is_active = False
 
-    def start(self):
+    def start_game(self):
         """Starts the game"""
-        pass
+        # Set is_active to True
+        self.is_active = True
+        # Reset round_number to zero
+        self.round_number = 0
+        # Start a new round
+        self.start_round()
