@@ -20,13 +20,17 @@ class MockButton(object):
     def _press(self):
         self.when_pressed()
 
-    def _release(self):
-        self.when_released()
-
     def when_pressed(self):
         """Calls this method when pressed"""
         pass
 
-    def when_released(self):
-        """Calls this method when released"""
-        pass
+class MockBuzzer(object):
+    """A mock implementation of a piezzo electric buzzer"""
+
+    def __init__(self, pin):
+        """Initialize buzzer with pin"""
+        self.pin = pin
+
+    def beep(self, on_time=1, off_time=1, n=None):
+        """Beep buzzer"""
+        print(on_time, off_time, n)
