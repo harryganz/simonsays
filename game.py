@@ -64,7 +64,7 @@ class Game(object):
         """Displays current sequence on lights"""
         for i in range(0, len(self.current_sequence)):
             # Flash each light in the sequence
-            self.lights[self.current_sequence[i]][0].flash(0.3, 0.3, 1, background=False)
+            self.lights[self.current_sequence[i]][0].blink(0.3, 0.3, 1, background=False)
 
     def start_round(self):
         """Starts a new round"""
