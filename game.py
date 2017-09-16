@@ -38,7 +38,7 @@ class Game(object):
         self.is_listening = True
         self.round_num = 0
         self.round_sequence = []
-    
+  
     def generate_sequence(self, seed=None):
         """
         Generates a random sequence of LEDs to
@@ -85,17 +85,32 @@ class Game(object):
         if source > -1:
             # If game is not active, start it
             if not self.is_active:
-                self.buzzer.beep(0.3, 0.3, 3, background=False)
+                self.round_num = 0
                 self.is_active = True
                 self.is_listening = False
             else:
                 # Blink the corresponding LED
-                self.lights[source].blink(0.3, 0.3, 1, background=True)
+                self.lights[source].blink(0.3, 0.3, 1, background=False)
+                # Match source to first item in sequence
+                if source == self.round_sequence[0]:
+                    # Remove the first item
+                    self.round_sequence = self.round_sequence[1:]
+                    # If no more items, start next round (empty sequences are falsy)
+                    if not self.round_sequence:
+                        self.is_listening = False
+                else:
+                    # Game over, beep for game end
+                    self.buzzer.beep(1, 0.3, 1, background=False)
+                    # Deactivate game
+                    self.is_active = False
+                    self.is_listening = True
 
     def start_round(self):
         """
         Runs for a new round
         """
+        # Beep Twice to signal new round
+        self.buzzer.beep(0.3, 0.3, 2, background=False)
         # Change variables
         self.round_num = self.round_num + 1
 
@@ -103,7 +118,7 @@ class Game(object):
         self.generate_sequence()
         self.display_sequence()
 
-        # Beep once, and turn listening back on
+        # Beep Twice and listen for input
         self.buzzer.beep(0.3, 0.3, 2, background=False)
         self.is_listening = True
 
