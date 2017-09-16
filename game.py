@@ -9,11 +9,12 @@ class Game(object):
     Instance of simon says game
     """
 
-    def __init__(self, light_pins, button_pins, led=gpiozero.LED, button=gpiozero.Button):
+    def __init__(self, light_pins, button_pins, buzzer_pin, led=gpiozero.LED, button=gpiozero.Button, buzzer=gpiozero.Buzzer):
         """
         Create simon says game instance
         @param light_pins: array of pins to use for lights
         @param button_pins: array of pins to use for buttons
+        @param buzzer_pin: io pin for the buzzer
         @param led: Class used for lights (default gpiozero.LED)
         @param button: Class used for buttons (default gpiozero.Button)
         """
@@ -28,6 +29,11 @@ class Game(object):
         # Check that lights and buttons are same length
         if len(self.buttons) != len(self.lights):
             raise Exception("Must have the same nubmer of buttons and lights")
+        # Add buzzer
+        self.buzzer = buzzer(buzzer_pin)
+        # Game state variables
+        self.is_active = False
+        self.is_listening = True
 
     def get_source(self):
         """
@@ -43,15 +49,22 @@ class Game(object):
 
     def handle_press(self):
         """
-        Handles logic for when a button is 
+        Handles logic for when a button is
         pressed
         """
-        # Source of the press
-        source = self.get_source()
-        # If a button was pressed
-        if source > -1:
-            # Blink the corresponding LED
-            self.lights[source].blink(0.3, 0.3, 1, background=True)
+        # Only handle press if listening
+        if self.is_listening:
+            # Source of the press
+            source = self.get_source()
+            # If a button was pressed
+            if source > -1:
+                # If game is not active, start it
+                if not self.is_active:
+                    self.buzzer.beep(0.5, 0, 1, background=False)
+                    self.is_active = True
+                else:
+                    # Blink the corresponding LED
+                    self.lights[source].blink(0.3, 0.3, 1, background=True)
 
     def start(self):
         """
@@ -69,5 +82,5 @@ class Game(object):
 
 # Start game if run as executable
 if __name__ == '__main__':
-    GAME = Game([17, 5, 19], [27, 6, 26])
+    GAME = Game([17, 5, 19], [27, 6, 26], 4)
     GAME.start()
