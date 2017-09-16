@@ -2,6 +2,7 @@
 Simon says game
 """
 from time import sleep
+import random
 import gpiozero
 
 class Game(object):
@@ -35,6 +36,31 @@ class Game(object):
         # Game state variables
         self.is_active = False
         self.is_listening = True
+        self.round_num = 0
+        self.round_sequence = []
+    
+    def generate_sequence(self, seed=None):
+        """
+        Generates a random sequence of LEDs to
+        blink for the current round
+        @param seed: The random seed to use (default None)
+        """
+        # Set the random seed, uses system default if None
+        random.seed(seed)
+
+        # Create a sequence for the current round of length round_num
+        self.round_sequence = []
+        for _ in range(0, self.round_num):
+            rand_led = random.randint(0, len(self.lights) - 1)
+            self.round_sequence.append(rand_led)
+
+    def display_sequence(self):
+        """
+        Displays the sequence of lights for this round
+        on the LEDs
+        """
+        for light in self.round_sequence:
+            self.lights[light].blink(0.3, 0.3, 1, background=False)
 
     def get_source(self):
         """
@@ -53,19 +79,33 @@ class Game(object):
         Handles logic for when a button is
         pressed
         """
-        # Only handle press if listening
-        if self.is_listening:
-            # Source of the press
-            source = self.get_source()
-            # If a button was pressed
-            if source > -1:
-                # If game is not active, start it
-                if not self.is_active:
-                    self.buzzer.beep(0.5, 0, 1, background=False)
-                    self.is_active = True
-                else:
-                    # Blink the corresponding LED
-                    self.lights[source].blink(0.3, 0.3, 1, background=True)
+        # Source of the press
+        source = self.get_source()
+        # If a button was pressed
+        if source > -1:
+            # If game is not active, start it
+            if not self.is_active:
+                self.buzzer.beep(0.3, 0.3, 3, background=False)
+                self.is_active = True
+                self.is_listening = False
+            else:
+                # Blink the corresponding LED
+                self.lights[source].blink(0.3, 0.3, 1, background=True)
+
+    def start_round(self):
+        """
+        Runs for a new round
+        """
+        # Change variables
+        self.round_num = self.round_num + 1
+
+        # Create and display sequence for current round
+        self.generate_sequence()
+        self.display_sequence()
+
+        # Beep once, and turn listening back on
+        self.buzzer.beep(0.3, 0.3, 2, background=False)
+        self.is_listening = True
 
     def start(self):
         """
@@ -75,7 +115,10 @@ class Game(object):
         try:
             print("Starting simonsays game")
             while True:
-                self.handle_press()
+                if self.is_listening:
+                    self.handle_press()
+                else:
+                    self.start_round()
                 sleep(0.1)
         except KeyboardInterrupt:
             print("Stopping simonsays game")
