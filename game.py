@@ -41,6 +41,17 @@ class Game(object):
                 return i
         return -1
 
+    def handle_press(self):
+        """
+        Handles logic for when a button is 
+        pressed
+        """
+        # Source of the press
+        source = self.get_source()
+        # If a button was pressed
+        if source > -1:
+            # Blink the corresponding LED
+            self.lights[source].blink(0.3, 0.3, 1, background=True)
 
     def start(self):
         """
@@ -50,11 +61,8 @@ class Game(object):
         try:
             print("Starting simonsays game")
             while True:
-                for light in self.lights:
-                    light.blink(0.3, 0.3, 1, background=False)
-                source = self.get_source()
-                print(source)
-                sleep(3)
+                self.handle_press()
+                sleep(0.1)
         except KeyboardInterrupt:
             print("Stopping simonsays game")
 
