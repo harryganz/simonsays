@@ -1,15 +1,16 @@
 """
 Simon says game
 """
-import gpiozero
 from time import sleep
+import gpiozero
 
 class Game(object):
     """
     Instance of simon says game
     """
 
-    def __init__(self, light_pins, button_pins, buzzer_pin, led=gpiozero.LED, button=gpiozero.Button, buzzer=gpiozero.Buzzer):
+    def __init__(self, light_pins, button_pins, buzzer_pin,
+                 led=gpiozero.LED, button=gpiozero.Button, buzzer=gpiozero.Buzzer):
         """
         Create simon says game instance
         @param light_pins: array of pins to use for lights
@@ -38,7 +39,7 @@ class Game(object):
     def get_source(self):
         """
         Returns the index of the button that is being pressed
-        If more than one button is being pressed, 
+        If more than one button is being pressed,
         returns the one with the lowest index
         """
         for i in range(0, len(self.buttons)):
